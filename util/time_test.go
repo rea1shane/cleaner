@@ -6,5 +6,7 @@ import (
 )
 
 func TestFromToday(t *testing.T) {
-	fmt.Println(FromToday("20060102", "20230217"))
+	days, err := FromToday("20060102", "20230216")
+	fmt.Println(days)
+	fmt.Println(fmt.Sprintf("%+v", err))
 }
