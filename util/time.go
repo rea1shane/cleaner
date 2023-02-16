@@ -15,7 +15,13 @@ func FromToday(layout, value string) (int, error) {
 	if err != nil {
 		return 0, failure.Wrap(err)
 	}
-	targetDate, _ := time.Parse(DateLayout, targetTime.Format(DateLayout))
-	today, _ := time.Parse(DateLayout, time.Now().Format(DateLayout))
-	return int(targetDate.Sub(today).Hours() / 24), nil
+	targetDate := GetDate(targetTime)
+	todayDate := GetDate(time.Now())
+	return int(targetDate.Sub(todayDate).Hours() / 24), nil
+}
+
+// GetDate 获得时间所属日期
+func GetDate(t time.Time) time.Time {
+	date, _ := time.Parse(DateLayout, t.Format(DateLayout))
+	return date
 }
