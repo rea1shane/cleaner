@@ -17,8 +17,8 @@ func TestParseTimes(t *testing.T) {
 		"data_date=20230230",
 	}
 	ts, em := ParseTimes(layout, values)
-	for _, t := range ts {
-		fmt.Println(t)
+	for s, time := range ts {
+		fmt.Println(s + ": " + time.String())
 	}
 	for s, err := range em {
 		fmt.Println(s + ": " + err.Error())

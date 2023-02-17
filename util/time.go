@@ -21,8 +21,8 @@ func FromToday(t time.Time) int {
 
 // ParseTimes 批量解析时间
 // 返回正确解析的时间数组、解析失败的字符串将及其错误原因
-func ParseTimes(layout string, value []string) (ts []time.Time, em map[string]error) {
-	for _, v := range value {
+func ParseTimes(layout string, values []string) (tm map[string]time.Time, em map[string]error) {
+	for _, v := range values {
 		t, err := ParseTime(layout, v)
 		if err != nil {
 			if em == nil {
@@ -30,7 +30,10 @@ func ParseTimes(layout string, value []string) (ts []time.Time, em map[string]er
 			}
 			em[v] = err
 		} else {
-			ts = append(ts, t)
+			if tm == nil {
+				tm = make(map[string]time.Time)
+			}
+			tm[v] = t
 		}
 	}
 	return
