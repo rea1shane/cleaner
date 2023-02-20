@@ -6,14 +6,14 @@ import (
 )
 
 var (
-	m1 = Mod{[]rule.Rule{
+	M1 = Mod{[]rule.Rule{
 		rule.R1{},
 	}}
-	m2 = Mod{[]rule.Rule{
+	M2 = Mod{[]rule.Rule{
 		rule.R1{},
 		rule.R2{},
 	}}
-	m3 = Mod{[]rule.Rule{
+	M3 = Mod{[]rule.Rule{
 		rule.R1{},
 		rule.R3{},
 	}}

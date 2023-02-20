@@ -11,27 +11,28 @@ const (
 
 func TestMod_Group(t *testing.T) {
 	values := []string{
+		"data_date=20201230",
 		"data_date=20221231",
 		"data_date=20230120",
 		"data_date=20230130",
 		"data_date=20230131",
 		"data_date=20230222",
-		"data_date=20230230",
+		"data_date=20230229",
 	}
-	m1m, m1u, m1e := m1.Group(layout, values)
-	fmt.Println("m1")
+	m1m, m1u, m1e := M1.Group(layout, values)
+	fmt.Println("M1")
 	fmt.Println(m1m)
 	fmt.Println(m1u)
 	fmt.Println(m1e)
 
-	m2m, m2u, m2e := m2.Group(layout, values)
-	fmt.Println("m2")
+	m2m, m2u, m2e := M2.Group(layout, values)
+	fmt.Println("M2")
 	fmt.Println(m2m)
 	fmt.Println(m2u)
 	fmt.Println(m2e)
 
-	m3m, m3u, m3e := m3.Group(layout, values)
-	fmt.Println("m3")
+	m3m, m3u, m3e := M3.Group(layout, values)
+	fmt.Println("M3")
 	fmt.Println(m3m)
 	fmt.Println(m3u)
 	fmt.Println(m3e)

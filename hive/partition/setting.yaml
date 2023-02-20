@@ -1,0 +1,20 @@
+hive:
+  storage:
+    type: hdfs
+
+    hdfs:
+      address: hdfs://cluster_name
+      path: /apps/hive/warehouse
+
+    partition-layout: data_date=20060102
+
+policy:
+  mod-1:
+    - table_A
+    - table_B
+
+  mod-2:
+    - table_C
+
+  mod-3:
+    - table_D
