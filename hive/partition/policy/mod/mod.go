@@ -9,7 +9,7 @@ type Mod struct {
 	rules []rule.Rule
 }
 
-func (m Mod) Classify(layout string, values []string) (matched, unmatched, errorValue []string) {
+func (m Mod) Group(layout string, values []string) (matched, unmatched, errorValue []string) {
 	tm, em := util.ParseTimes(layout, values)
 	for s := range em {
 		errorValue = append(errorValue, s)
