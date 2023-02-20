@@ -5,6 +5,20 @@ import (
 	"github.com/rea1shane/cleaner/util"
 )
 
+var (
+	m1 = Mod{[]rule.Rule{
+		rule.R1{},
+	}}
+	m2 = Mod{[]rule.Rule{
+		rule.R1{},
+		rule.R2{},
+	}}
+	m3 = Mod{[]rule.Rule{
+		rule.R1{},
+		rule.R3{},
+	}}
+)
+
 type Mod struct {
 	rules []rule.Rule
 }
