@@ -3,7 +3,7 @@ hive:
     type: hdfs
 
     hdfs:
-      address: hdfs://cluster_name
+      address: localhost:9000
       path: /apps/hive/warehouse
 
     partition-layout: data_date=20060102
