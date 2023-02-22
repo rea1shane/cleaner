@@ -10,11 +10,10 @@ hive:
 
 policy:
   mod-1:
-    - table_A
-    - table_B
+    - ods.A
 
   mod-2:
-    - table_C
+    - dw.B
 
   mod-3:
-    - table_D
+    - dw.C

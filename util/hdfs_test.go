@@ -1,20 +1,36 @@
 package util
 
 import (
+	"fmt"
 	"github.com/colinmarc/hdfs"
 	"os"
+	"strings"
 	"testing"
 )
 
-var tableList = make(map[string][]string)
+var (
+	client, _ = hdfs.New("localhost:9000")
+	tableList = make(map[string][]string)
+)
+
+func TestLs(t *testing.T) {
+	subDirs, _ := client.ReadDir("/apps/hive/warehouse/A")
+	for _, dir := range subDirs {
+		fmt.Println(dir.Name())
+	}
+}
 
 func TestInit(t *testing.T) {
-	client, _ := hdfs.New("localhost:9000")
 	for tableName, partitions := range tableList {
+		ss := strings.Split(tableName, ".")
 		for _, partition := range partitions {
-			client.MkdirAll("/apps/hive/warehouse/"+tableName+"/data_date="+partition, os.FileMode(0755))
+			client.MkdirAll("/apps/hive/warehouse/"+ss[0]+"/"+ss[1]+"/data_date="+partition, os.FileMode(0755))
 		}
 	}
+}
+
+func TestClean(t *testing.T) {
+	client.Remove("/apps")
 }
 
 func init() {
@@ -53,7 +69,7 @@ func init() {
 			"20230130",
 		}
 	)
-	tableList["A"] = aList
-	tableList["B"] = bList
-	tableList["C"] = cList
+	tableList["ods.A"] = aList
+	tableList["dw.B"] = bList
+	tableList["dw.C"] = cList
 }
