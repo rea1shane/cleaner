@@ -14,3 +14,4 @@ run:
 
 clean:
 	rm -rf bin
+	rm -rf hive_partition_cleaner.tar.gz
