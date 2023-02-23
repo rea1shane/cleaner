@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/colinmarc/hdfs"
 	"github.com/rea1shane/cleaner/hive/partition/policy/mod"
-	"github.com/rea1shane/cleaner/util"
+	"github.com/rea1shane/cleaner/hive/partition/storage"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"strings"
@@ -16,9 +15,10 @@ type cleaner struct {
 			Type string `yaml:"type"`
 			Hdfs struct {
 				Address string `yaml:"address"`
-				Path    string `yaml:"path"`
 			} `yaml:"hdfs"`
+			RootPath        string `yaml:"root-path"`
 			PartitionLayout string `yaml:"partition-layout"`
+			BackupPath      string `yaml:"backup-path"`
 		} `yaml:"storage"`
 	} `yaml:"hive"`
 	Policy struct {
@@ -30,7 +30,7 @@ type cleaner struct {
 
 var (
 	c                   *cleaner
-	client              *hdfs.Client
+	s                   storage.Storage
 	savePartitions      = make(map[string]map[string][]string)
 	needCleanPartitions = make(map[string]map[string][]string)
 	wrongTables         []string
@@ -48,11 +48,19 @@ func main() {
 		panic(err)
 	}
 
-	client, err = util.HdfsGetClient(c.Hive.Storage.Hdfs.Address)
-	if err != nil {
-		panic(err)
+	switch c.Hive.Storage.Type {
+	case "hdfs":
+		s, err = storage.InitHdfs(
+			c.Hive.Storage.Hdfs.Address,
+			c.Hive.Storage.RootPath,
+			c.Hive.Storage.PartitionLayout,
+			c.Hive.Storage.BackupPath,
+		)
+		if err != nil {
+			panic(err)
+		}
 	}
-	defer client.Close()
+	defer s.Close()
 
 	for _, t := range c.Policy.Mod1 {
 		groupHivePartitions(mod.M1, t)
@@ -81,16 +89,10 @@ func groupHivePartitions(m mod.Mod, t string) {
 		return
 	}
 
-	var (
-		path       string
-		partitions []string
-	)
-
-	// 获取存储路径和分区
-	switch c.Hive.Storage.Type {
-	case "hdfs":
-		path = getHdfsPath(dat[0], dat[1])
-		partitions, _ = util.HdfsListSubDirs(client, path)
+	// 获取分区列表
+	partitions, err := s.ListPartitions(dat[0], dat[1])
+	if err != nil {
+		panic(err)
 	}
 
 	// 将分区按照规则分类
@@ -113,8 +115,4 @@ func groupHivePartitions(m mod.Mod, t string) {
 		}
 		wrongPartitions[dat[0]][dat[1]] = errorPartitions
 	}
-}
-
-func getHdfsPath(dbName, tableName string) string {
-	return c.Hive.Storage.Hdfs.Path + "/" + dbName + "/" + tableName
 }

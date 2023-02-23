@@ -14,7 +14,7 @@ var (
 )
 
 func TestLs(t *testing.T) {
-	subDirs, _ := client.ReadDir("/apps/hive/warehouse/A")
+	subDirs, _ := client.ReadDir("/apps/hive/warehouse")
 	for _, dir := range subDirs {
 		fmt.Println(dir.Name())
 	}

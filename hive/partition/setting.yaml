@@ -1,12 +1,12 @@
 hive:
   storage:
     type: hdfs
-
     hdfs:
       address: localhost:9000
-      path: /apps/hive/warehouse
 
+    root-path: /apps/hive/warehouse
     partition-layout: data_date=20060102
+    backup-path: /cleaner/backup
 
 policy:
   mod-1:
