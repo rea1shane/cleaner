@@ -31,15 +31,14 @@ type cleaner struct {
 var (
 	c                   *cleaner
 	s                   storage.Storage
+	wrongTables         []string
 	savePartitions      = make(map[string]map[string][]string)
 	needCleanPartitions = make(map[string]map[string][]string)
-	wrongTables         []string
 	wrongPartitions     = make(map[string]map[string][]string)
 )
 
 func main() {
-	// TODO 更换 yaml 路径
-	file, err := ioutil.ReadFile("hive/partition/setting.yaml")
+	file, err := ioutil.ReadFile("setting.yaml")
 	if err != nil {
 		panic(err)
 	}

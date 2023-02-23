@@ -17,5 +17,8 @@
 .idea
 .DS_Store
 
-## execuable file
+# execuable file
 bin
+
+# package
+*.tar.gz
