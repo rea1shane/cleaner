@@ -42,11 +42,18 @@ func (h *Hdfs) ListPartitions(dbName, tableName string) (partitions []string, er
 func (h *Hdfs) BackupPartitions(dbName, tableName string, partitions []string) error {
 	tablePath := h.getTablePath(dbName, tableName)
 	for _, partition := range partitions {
-		src := tablePath + "/" + partition
-		dst := h.backupPath + "/" + dbName + "/" + tableName + "/" + partition
-		err := h.client.CopyToRemote(src, dst)
+		src := tablePath + "/" + partition + "/"
+		dst := h.backupPath + "/" + dbName + "/" + tableName + "/" + partition + "/"
+		files, err := h.client.ReadDir(src)
 		if err != nil {
 			return failure.Wrap(err)
+		}
+		for _, file := range files {
+			// TODO Rename 方法报错 file does not exist
+			err := h.client.Rename(src+file.Name(), dst+file.Name())
+			if err != nil {
+				return failure.Wrap(err)
+			}
 		}
 	}
 	return nil

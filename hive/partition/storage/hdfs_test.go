@@ -25,6 +25,7 @@ func TestInit(t *testing.T) {
 		ss := strings.Split(tableName, ".")
 		for _, partition := range partitions {
 			client.MkdirAll("/apps/hive/warehouse/"+ss[0]+"/"+ss[1]+"/data_date="+partition, os.FileMode(0755))
+			client.CreateEmptyFile("/apps/hive/warehouse/" + ss[0] + "/" + ss[1] + "/data_date=" + partition + "/testFile")
 		}
 	}
 }

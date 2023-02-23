@@ -71,13 +71,27 @@ func main() {
 		groupHivePartitions(mod.M3, t)
 	}
 
-	fmt.Println(fmt.Sprintf("%+v", savePartitions))
-	fmt.Println()
-	fmt.Println(fmt.Sprintf("%+v", needCleanPartitions))
-	fmt.Println()
-	fmt.Println(fmt.Sprintf("%+v", wrongPartitions))
+	fmt.Println("格式错误的表名：")
+	fmt.Println(wrongTables)
+	fmt.Println("保留的分区：")
+	fmt.Println(savePartitions)
+	fmt.Println("需要清理的分区：")
+	fmt.Println(needCleanPartitions)
+	fmt.Println("格式错误的分区：")
+	fmt.Println(wrongPartitions)
 
-	// TODO 删除分区
+	for db, m := range needCleanPartitions {
+		for table, partitions := range m {
+			//err := s.BackupPartitions(db, table, partitions)
+			//if err != nil {
+			//	panic(err)
+			//}
+			err = s.DeletePartitions(db, table, partitions)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
 }
 
 func groupHivePartitions(m mod.Mod, t string) {
