@@ -8,6 +8,8 @@ import (
 	"testing"
 )
 
+// 生成测试数据
+
 var (
 	client, _ = hdfs.New("localhost:9000")
 	tableList = make(map[string][]string)

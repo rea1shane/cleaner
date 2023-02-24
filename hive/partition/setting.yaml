@@ -1,3 +1,6 @@
+action:
+  type: backup
+
 hive:
   storage:
     type: hdfs

@@ -3,6 +3,7 @@ package storage
 import (
 	"github.com/colinmarc/hdfs"
 	"github.com/morikuni/failure"
+	"os"
 )
 
 type Hdfs struct {
@@ -44,19 +45,25 @@ func (h *Hdfs) BackupPartitions(dbName, tableName string, partitions []string) e
 	for _, partition := range partitions {
 		src := tablePath + "/" + partition + "/"
 		dst := h.backupPath + "/" + dbName + "/" + tableName + "/" + partition + "/"
+		// 创建目标路径的父路径
+		err := h.client.MkdirAll(dst, os.FileMode(0755))
+		if err != nil {
+			return failure.Wrap(err)
+		}
+		// 遍历文件并进行移动
 		files, err := h.client.ReadDir(src)
 		if err != nil {
 			return failure.Wrap(err)
 		}
 		for _, file := range files {
-			// TODO Rename 方法报错 file does not exist
-			err := h.client.Rename(src+file.Name(), dst+file.Name())
+			err = h.client.Rename(src+file.Name(), dst+file.Name())
 			if err != nil {
 				return failure.Wrap(err)
 			}
 		}
 	}
-	return nil
+	// 删除原始路径
+	return h.DeletePartitions(dbName, tableName, partitions)
 }
 
 func (h *Hdfs) DeletePartitions(dbName, tableName string, partitions []string) error {

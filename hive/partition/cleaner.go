@@ -10,6 +10,9 @@ import (
 )
 
 type cleaner struct {
+	Action struct {
+		Type string `yaml:"type"`
+	} `yaml:"action"`
 	Hive struct {
 		Storage struct {
 			Type string `yaml:"type"`
@@ -82,11 +85,13 @@ func main() {
 
 	for db, m := range needCleanPartitions {
 		for table, partitions := range m {
-			//err := s.BackupPartitions(db, table, partitions)
-			//if err != nil {
-			//	panic(err)
-			//}
-			err = s.DeletePartitions(db, table, partitions)
+			var err error
+			switch c.Action.Type {
+			case "backup":
+				err = s.BackupPartitions(db, table, partitions)
+			case "delete":
+				err = s.DeletePartitions(db, table, partitions)
+			}
 			if err != nil {
 				panic(err)
 			}
