@@ -20,7 +20,7 @@ type cleaner struct {
 		Storage struct {
 			Type string `yaml:"type"`
 			Hdfs struct {
-				Address string `yaml:"address"`
+				ConfigPath string `yaml:"config-path"`
 			} `yaml:"hdfs"`
 			RootPath        string `yaml:"root-path"`
 			PartitionLayout string `yaml:"partition-layout"`
@@ -56,7 +56,7 @@ func main() {
 	switch c.Hive.Storage.Type {
 	case "hdfs":
 		s, err = storage.InitHdfs(
-			c.Hive.Storage.Hdfs.Address,
+			c.Hive.Storage.Hdfs.ConfigPath,
 			c.Hive.Storage.RootPath,
 			c.Hive.Storage.PartitionLayout,
 			c.Hive.Storage.BackupPath,
