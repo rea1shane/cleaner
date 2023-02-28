@@ -99,7 +99,7 @@ func main() {
 
 func groupHivePartitions(m mod.Mod, t string) {
 	// 记录不合规范的表名
-	dat := strings.Split(t, ".")
+	dat := strings.Split(t, "/")
 	if len(dat) != 2 {
 		wrongTables = append(wrongTables, t)
 		return
