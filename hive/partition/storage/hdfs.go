@@ -13,7 +13,7 @@ type Hdfs struct {
 	backupPath      string
 }
 
-func InitHdfs(confPath, rootPath, partitionLayout, backupPath string) (*Hdfs, error) {
+func InitHdfs(confPath, username, rootPath, partitionLayout, backupPath string) (*Hdfs, error) {
 	hadoopConf := hdfs.LoadHadoopConf(confPath)
 	namenodes, err := hadoopConf.Namenodes()
 	if err != nil {
@@ -21,6 +21,7 @@ func InitHdfs(confPath, rootPath, partitionLayout, backupPath string) (*Hdfs, er
 	}
 	client, err := hdfs.NewClient(hdfs.ClientOptions{
 		Addresses: namenodes,
+		User:      username,
 	})
 	if err != nil {
 		return nil, failure.Wrap(err)

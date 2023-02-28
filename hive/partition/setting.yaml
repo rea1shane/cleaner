@@ -10,6 +10,8 @@ hive:
     hdfs:
       # 如果已经存在 HADOOP_CONF_DIR 或 HADOOP_HOME 环境变量，则将此值置空即可
       config-path: /etc/hadoop/conf/
+      # 进行操作的用户名称
+      username: username
 
     # hive 存在 hdfs 的根路径
     root-path: /apps/hive/warehouse
