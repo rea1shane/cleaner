@@ -1,15 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"github.com/morikuni/failure"
 	"github.com/rea1shane/cleaner/hive/partition/policy/mod"
 	"github.com/rea1shane/cleaner/hive/partition/storage"
 	"github.com/xuri/excelize/v2"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type cleaner struct {
@@ -77,14 +77,6 @@ func main() {
 		groupHivePartitions(mod.M3, t)
 	}
 
-	//fmt.Println("格式错误的表名：")
-	//fmt.Println(wrongTables)
-	//fmt.Println("保留的分区：")
-	//fmt.Println(savePartitions)
-	//fmt.Println("需要清理的分区：")
-	//fmt.Println(needCleanPartitions)
-	//fmt.Println("格式错误的分区：")
-	//fmt.Println(wrongPartitions)
 	saveToExcel()
 
 	for db, m := range needCleanPartitions {
@@ -147,48 +139,50 @@ func saveToExcel() {
 		}
 	}()
 
-	needCleanSheet(f)
+	if len(needCleanPartitions) != 0 {
+		savePartitionsToSheet(f, "需要清理的分区", needCleanPartitions)
+	}
+	if len(savePartitions) != 0 {
+		savePartitionsToSheet(f, "保留的分区", savePartitions)
+	}
+	if len(wrongPartitions) != 0 {
+		savePartitionsToSheet(f, "格式错误的分区", savePartitions)
+	}
+	if len(wrongTables) != 0 {
+		saveTablesToSheet(f, "格式错误的表", wrongTables)
+	}
 	f.DeleteSheet("Sheet1")
 
-	if err := f.SaveAs("cleaner.xlsx"); err != nil {
-		fmt.Println(err)
+	os.MkdirAll("logs", os.FileMode(0755))
+	if err := f.SaveAs("logs/" + time.Now().Format("2006-01-02") + "_" + c.Action.Type + ".xlsx"); err != nil {
+		panic(err)
 	}
 }
 
-func needCleanSheet(f *excelize.File) error {
-	sheetName := "需要删除的分区"
-	index, err := f.NewSheet(sheetName)
-	if err != nil {
-		return failure.Wrap(err)
-	}
-	f.SetActiveSheet(index)
-
+func savePartitionsToSheet(f *excelize.File, sheetName string, m map[string]map[string][]string) {
+	f.NewSheet(sheetName)
 	y := 1
-	for db, m := range needCleanPartitions {
-
-		// 记录开始单元格
-		currentDbY := y
-		// 设置单元格
+	for db, tableM := range m {
+		dbStartY := y
 		f.SetCellValue(sheetName, "A"+strconv.Itoa(y), db)
-
-		for table, partitions := range m {
-
-			// 记录开始单元格
-			currentTableY := y
-			// 设置单元格
+		for table, partitions := range tableM {
+			tableStartY := y
 			f.SetCellValue(sheetName, "B"+strconv.Itoa(y), table)
-
 			for _, partition := range partitions {
 				f.SetCellValue(sheetName, "C"+strconv.Itoa(y), partition)
 				y++
 			}
-
-			f.MergeCell(sheetName, "B"+strconv.Itoa(currentTableY), "B"+strconv.Itoa(y-1))
+			f.MergeCell(sheetName, "B"+strconv.Itoa(tableStartY), "B"+strconv.Itoa(y-1))
 		}
-
-		f.MergeCell(sheetName, "A"+strconv.Itoa(currentDbY), "A"+strconv.Itoa(y-1))
-
+		f.MergeCell(sheetName, "A"+strconv.Itoa(dbStartY), "A"+strconv.Itoa(y-1))
 	}
+}
 
-	return nil
+func saveTablesToSheet(f *excelize.File, sheetName string, ss []string) {
+	f.NewSheet(sheetName)
+	y := 1
+	for _, table := range ss {
+		f.SetCellValue(sheetName, "A"+strconv.Itoa(y), table)
+		y++
+	}
 }

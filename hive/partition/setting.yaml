@@ -1,4 +1,7 @@
 action:
+  # backup：备份并且删除需要清理的数据，并且输出 Excel
+  # delete：删除需要清理的数据，并且输出 Excel
+  # test：仅输出 Excel
   type: backup
 
 hive:
@@ -7,8 +10,11 @@ hive:
     hdfs:
       address: localhost:9000
 
+    # hive 存在 hdfs 的根路径
     root-path: /apps/hive/warehouse
+    # hive 分区的文件夹格式
     partition-layout: data_date=20060102
+    # 备份数据的路径，数据将会从 root-path 移动到 backup-path 并且保留相对 root-path 的目录层级
     backup-path: /cleaner/backup
 
 policy:
