@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/morikuni/failure"
 	"github.com/rea1shane/cleaner/hive/partition/policy/mod"
 	"github.com/rea1shane/cleaner/hive/partition/storage"
+	"github.com/xuri/excelize/v2"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"strconv"
 	"strings"
 )
 
@@ -74,14 +77,15 @@ func main() {
 		groupHivePartitions(mod.M3, t)
 	}
 
-	fmt.Println("格式错误的表名：")
-	fmt.Println(wrongTables)
-	fmt.Println("保留的分区：")
-	fmt.Println(savePartitions)
-	fmt.Println("需要清理的分区：")
-	fmt.Println(needCleanPartitions)
-	fmt.Println("格式错误的分区：")
-	fmt.Println(wrongPartitions)
+	//fmt.Println("格式错误的表名：")
+	//fmt.Println(wrongTables)
+	//fmt.Println("保留的分区：")
+	//fmt.Println(savePartitions)
+	//fmt.Println("需要清理的分区：")
+	//fmt.Println(needCleanPartitions)
+	//fmt.Println("格式错误的分区：")
+	//fmt.Println(wrongPartitions)
+	saveToExcel()
 
 	for db, m := range needCleanPartitions {
 		for table, partitions := range m {
@@ -133,4 +137,58 @@ func groupHivePartitions(m mod.Mod, t string) {
 		}
 		wrongPartitions[dat[0]][dat[1]] = errorPartitions
 	}
+}
+
+func saveToExcel() {
+	f := excelize.NewFile()
+	defer func() {
+		if err := f.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	needCleanSheet(f)
+	f.DeleteSheet("Sheet1")
+
+	if err := f.SaveAs("cleaner.xlsx"); err != nil {
+		fmt.Println(err)
+	}
+}
+
+func needCleanSheet(f *excelize.File) error {
+	sheetName := "需要删除的分区"
+	index, err := f.NewSheet(sheetName)
+	if err != nil {
+		return failure.Wrap(err)
+	}
+	f.SetActiveSheet(index)
+
+	y := 1
+	for db, m := range needCleanPartitions {
+
+		// 记录开始单元格
+		currentDbY := y
+		// 设置单元格
+		f.SetCellValue(sheetName, "A"+strconv.Itoa(y), db)
+
+		for table, partitions := range m {
+
+			// 记录开始单元格
+			currentTableY := y
+			// 设置单元格
+			f.SetCellValue(sheetName, "B"+strconv.Itoa(y), table)
+
+			for _, partition := range partitions {
+				f.SetCellValue(sheetName, "C"+strconv.Itoa(y), partition)
+				y++
+			}
+
+			f.MergeCell(sheetName, "B"+strconv.Itoa(currentTableY), "B"+strconv.Itoa(y-1))
+		}
+
+		f.MergeCell(sheetName, "A"+strconv.Itoa(currentDbY), "A"+strconv.Itoa(y-1))
+
+	}
+
+	return nil
 }

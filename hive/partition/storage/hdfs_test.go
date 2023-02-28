@@ -34,6 +34,7 @@ func TestInit(t *testing.T) {
 
 func TestClean(t *testing.T) {
 	client.Remove("/apps")
+	client.Remove("/cleaner")
 }
 
 func init() {

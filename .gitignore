@@ -22,3 +22,6 @@ bin
 
 # package
 *.tar.gz
+
+# excel
+*.xlsx
