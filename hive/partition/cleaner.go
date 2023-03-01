@@ -45,6 +45,7 @@ var (
 )
 
 func main() {
+	// 读取配置文件
 	file, err := ioutil.ReadFile("setting.yaml")
 	if err != nil {
 		panic(err)
@@ -54,6 +55,7 @@ func main() {
 		panic(err)
 	}
 
+	// 初始化存储
 	switch c.Hive.Storage.Type {
 	case "hdfs":
 		s, err = storage.InitHdfs(
@@ -69,14 +71,12 @@ func main() {
 	}
 	defer s.Close()
 
+	// 分类分区
 	for _, t := range c.Policy.Mod1 {
 		groupHivePartitions(mod.M1, t)
 	}
 	for _, t := range c.Policy.Mod2 {
 		groupHivePartitions(mod.M2, t)
-	}
-	for _, t := range c.Policy.Mod3 {
-		groupHivePartitions(mod.M3, t)
 	}
 
 	saveToExcel()
@@ -99,14 +99,14 @@ func main() {
 
 func groupHivePartitions(m mod.Mod, t string) {
 	// 记录不合规范的表名
-	dat := strings.Split(t, "/")
-	if len(dat) != 2 {
+	dbAndTable := strings.Split(t, "/")
+	if len(dbAndTable) != 2 {
 		wrongTables = append(wrongTables, t)
 		return
 	}
 
 	// 获取分区列表
-	partitions, err := s.ListPartitions(dat[0], dat[1])
+	partitions, err := s.ListPartitions(dbAndTable[0], dbAndTable[1])
 	if err != nil {
 		panic(err)
 	}
@@ -114,22 +114,22 @@ func groupHivePartitions(m mod.Mod, t string) {
 	// 将分区按照规则分类
 	matched, unmatched, errorPartitions := m.Group(c.Hive.Storage.PartitionLayout, partitions)
 	if len(matched) != 0 {
-		if savePartitions[dat[0]] == nil {
-			savePartitions[dat[0]] = make(map[string][]string)
+		if savePartitions[dbAndTable[0]] == nil {
+			savePartitions[dbAndTable[0]] = make(map[string][]string)
 		}
-		savePartitions[dat[0]][dat[1]] = matched
+		savePartitions[dbAndTable[0]][dbAndTable[1]] = matched
 	}
 	if len(unmatched) != 0 {
-		if needCleanPartitions[dat[0]] == nil {
-			needCleanPartitions[dat[0]] = make(map[string][]string)
+		if needCleanPartitions[dbAndTable[0]] == nil {
+			needCleanPartitions[dbAndTable[0]] = make(map[string][]string)
 		}
-		needCleanPartitions[dat[0]][dat[1]] = unmatched
+		needCleanPartitions[dbAndTable[0]][dbAndTable[1]] = unmatched
 	}
 	if len(errorPartitions) != 0 {
-		if wrongPartitions[dat[0]] == nil {
-			wrongPartitions[dat[0]] = make(map[string][]string)
+		if wrongPartitions[dbAndTable[0]] == nil {
+			wrongPartitions[dbAndTable[0]] = make(map[string][]string)
 		}
-		wrongPartitions[dat[0]][dat[1]] = errorPartitions
+		wrongPartitions[dbAndTable[0]][dbAndTable[1]] = errorPartitions
 	}
 }
 

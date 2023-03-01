@@ -34,8 +34,8 @@ func InitHdfs(confPath, username, rootPath, partitionLayout, backupPath string) 
 	}, nil
 }
 
-func (h *Hdfs) ListPartitions(dbName, tableName string) (partitions []string, err error) {
-	infos, err := h.client.ReadDir(h.getTablePath(dbName, tableName))
+func (h *Hdfs) ListPartitions(db, table string) (partitions []string, err error) {
+	infos, err := h.client.ReadDir(h.getTablePath(db, table))
 	if err != nil {
 		err = failure.Wrap(err)
 		return
@@ -48,11 +48,11 @@ func (h *Hdfs) ListPartitions(dbName, tableName string) (partitions []string, er
 	return
 }
 
-func (h *Hdfs) BackupPartitions(dbName, tableName string, partitions []string) error {
-	tablePath := h.getTablePath(dbName, tableName)
+func (h *Hdfs) BackupPartitions(db, table string, partitions []string) error {
+	tablePath := h.getTablePath(db, table)
 	for _, partition := range partitions {
 		src := tablePath + "/" + partition + "/"
-		dst := h.backupPath + "/" + dbName + "/" + tableName + "/" + partition + "/"
+		dst := h.backupPath + "/" + db + "/" + table + "/" + partition + "/"
 		// 创建目标路径的父路径
 		err := h.client.MkdirAll(dst, os.FileMode(0755))
 		if err != nil {
@@ -71,11 +71,11 @@ func (h *Hdfs) BackupPartitions(dbName, tableName string, partitions []string) e
 		}
 	}
 	// 删除原始路径
-	return h.DeletePartitions(dbName, tableName, partitions)
+	return h.DeletePartitions(db, table, partitions)
 }
 
-func (h *Hdfs) DeletePartitions(dbName, tableName string, partitions []string) error {
-	tablePath := h.getTablePath(dbName, tableName)
+func (h *Hdfs) DeletePartitions(db, table string, partitions []string) error {
+	tablePath := h.getTablePath(db, table)
 	for _, partition := range partitions {
 		err := h.client.Remove(tablePath + "/" + partition)
 		if err != nil {
@@ -89,6 +89,6 @@ func (h *Hdfs) Close() error {
 	return h.client.Close()
 }
 
-func (h *Hdfs) getTablePath(dbName, tableName string) string {
-	return h.rootPath + "/" + dbName + "/" + tableName
+func (h *Hdfs) getTablePath(db, table string) string {
+	return h.rootPath + "/" + db + "/" + table
 }
