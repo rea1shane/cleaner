@@ -6,7 +6,9 @@ build:
 
 package:
 	$(MAKE) build
-	tar zcvf hive_partition_cleaner.tar.gz -C . bin
+	cp -R bin hive_partition_cleaner
+	tar zcvf hive_partition_cleaner.tar.gz -C . hive_partition_cleaner
+	rm -rf hive_partition_cleaner
 
 run:
 	$(MAKE) build
