@@ -30,10 +30,4 @@ func TestMod_Group(t *testing.T) {
 	fmt.Println(m2m)
 	fmt.Println(m2u)
 	fmt.Println(m2e)
-
-	m3m, m3u, m3e := M3.Group(layout, values)
-	fmt.Println("M3")
-	fmt.Println(m3m)
-	fmt.Println(m3u)
-	fmt.Println(m3e)
 }

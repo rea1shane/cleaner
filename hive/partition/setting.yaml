@@ -26,3 +26,4 @@ policy:
 
   mod-2:
     - dw/B
+    - dw/C

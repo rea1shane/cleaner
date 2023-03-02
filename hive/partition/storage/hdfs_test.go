@@ -73,7 +73,7 @@ func init() {
 			"20230130",
 		}
 	)
-	tableList["ods.A"] = aList
-	tableList["dw.B"] = bList
-	tableList["dw.C"] = cList
+	tableList["ods/A"] = aList
+	tableList["dw/B"] = bList
+	tableList["dw/C"] = cList
 }

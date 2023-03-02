@@ -72,11 +72,11 @@ func main() {
 	defer s.Close()
 
 	// 分类分区
-	for _, t := range c.Policy.Mod1 {
-		groupHivePartitions(mod.M1, t)
+	for _, dbTable := range c.Policy.Mod1 {
+		groupHivePartitions(mod.M1, dbTable)
 	}
-	for _, t := range c.Policy.Mod2 {
-		groupHivePartitions(mod.M2, t)
+	for _, dbTable := range c.Policy.Mod2 {
+		groupHivePartitions(mod.M2, dbTable)
 	}
 
 	saveToExcel()
@@ -97,11 +97,11 @@ func main() {
 	}
 }
 
-func groupHivePartitions(m mod.Mod, t string) {
+func groupHivePartitions(m mod.Mod, dbTable string) {
 	// 记录不合规范的表名
-	dbAndTable := strings.Split(t, "/")
+	dbAndTable := strings.Split(dbTable, "/")
 	if len(dbAndTable) != 2 {
-		wrongTables = append(wrongTables, t)
+		wrongTables = append(wrongTables, dbTable)
 		return
 	}
 
