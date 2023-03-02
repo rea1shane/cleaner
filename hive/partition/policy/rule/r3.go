@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-// R3 判断日期是否是当前日期。
+// R3 日期是所属月的最后一天。
 type R3 struct{}
 
-func (r R3) IsMatch(t time.Time) bool {
-	return util.FromToday(t) == 0
+func (r R3) IsMatch(t time.Time, _ []time.Time) bool {
+	return util.IsMonthEnd(t)
 }

@@ -5,10 +5,9 @@ import (
 	"time"
 )
 
-// R2 判断日期是否距当前日期小于 365 天。
+// R2 日期距当前日期小于等于 365 天。
 type R2 struct{}
 
-func (r R2) IsMatch(t time.Time) bool {
-	fromToday := util.FromToday(t)
-	return fromToday > -365 && fromToday <= 0
+func (r R2) IsMatch(t time.Time, _ []time.Time) bool {
+	return util.FromToday(t) >= -365
 }

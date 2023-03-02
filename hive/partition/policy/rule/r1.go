@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-// R1 判断日期是否是所属月的最后一天。
+// R1 日期距当前日期小于等于 31 天。
 type R1 struct{}
 
-func (r R1) IsMatch(t time.Time) bool {
-	return util.IsMonthEnd(t)
+func (r R1) IsMatch(t time.Time, _ []time.Time) bool {
+	return util.FromToday(t) >= -31
 }
