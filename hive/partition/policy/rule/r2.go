@@ -1,7 +1,6 @@
 package rule
 
 import (
-	"github.com/rea1shane/cleaner/util"
 	"time"
 )
 
@@ -9,5 +8,5 @@ import (
 type R2 struct{}
 
 func (r R2) IsMatch(t time.Time, _ []time.Time) bool {
-	return util.FromToday(t) >= -365
+	return FromToday(t) >= -365
 }

@@ -1,7 +1,6 @@
 package rule
 
 import (
-	"github.com/rea1shane/cleaner/util"
 	"time"
 )
 
@@ -9,5 +8,5 @@ import (
 type R3 struct{}
 
 func (r R3) IsMatch(t time.Time, _ []time.Time) bool {
-	return util.IsMonthEnd(t)
+	return t.Month() != t.Add(24*time.Hour).Month()
 }
