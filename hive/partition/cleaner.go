@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -162,16 +163,26 @@ func saveToExcel() {
 }
 
 func savePartitionsToSheet(f *excelize.File, sheetName string, m map[string]map[string][]string) {
+	// 创建 Sheet
 	f.NewSheet(sheetName)
+	// 行数游标
 	y := 1
 	for db, tableM := range m {
+		// db
 		dbStartY := y
 		f.SetCellValue(sheetName, "A"+strconv.Itoa(y), db)
 		for table, partitions := range tableM {
+			// table
 			tableStartY := y
 			f.SetCellValue(sheetName, "B"+strconv.Itoa(y), table)
-			for _, partition := range partitions {
-				f.SetCellValue(sheetName, "C"+strconv.Itoa(y), partition)
+			// 转换分区为时间，并且进行正序排序
+			ts := parseTimes(c.Hive.Storage.PartitionLayout, partitions)
+			sort.Slice(ts, func(i, j int) bool {
+				return ts[i].Sub(ts[j]) < 0
+			})
+			for _, t := range ts {
+				// partition
+				f.SetCellValue(sheetName, "C"+strconv.Itoa(y), t.Format("2006-01-02"))
 				y++
 			}
 			f.MergeCell(sheetName, "B"+strconv.Itoa(tableStartY), "B"+strconv.Itoa(y-1))
@@ -181,10 +192,28 @@ func savePartitionsToSheet(f *excelize.File, sheetName string, m map[string]map[
 }
 
 func saveTablesToSheet(f *excelize.File, sheetName string, ss []string) {
+	// 创建 Sheet
 	f.NewSheet(sheetName)
+	// 行数游标
 	y := 1
 	for _, table := range ss {
+		// table
 		f.SetCellValue(sheetName, "A"+strconv.Itoa(y), table)
 		y++
 	}
+}
+
+// parseTimes 批量解析时间
+func parseTimes(layout string, values []string) (ts []time.Time) {
+	for _, v := range values {
+		ts = append(ts, parseTime(layout, v))
+	}
+	return
+}
+
+// parseTime 用本地时区解析时间
+// 因为这里存放的都是之前解析成功的，所以可以忽略错误
+func parseTime(layout, value string) time.Time {
+	t, _ := time.ParseInLocation(layout, value, time.Now().Location())
+	return t
 }
