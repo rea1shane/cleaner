@@ -7,6 +7,7 @@ build:
 package:
 	$(MAKE) build
 	cp -R bin hive_partition_cleaner
+	cp README.md hive_partition_cleaner
 	tar zcvf hive_partition_cleaner.tar.gz -C . hive_partition_cleaner
 	rm -rf hive_partition_cleaner
 
@@ -16,4 +17,5 @@ run:
 
 clean:
 	rm -rf bin
+	rm -rf logs
 	rm -rf hive_partition_cleaner.tar.gz

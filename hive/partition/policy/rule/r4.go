@@ -15,7 +15,7 @@ func (r R4) IsMatch(t time.Time, ts []time.Time) bool {
 		monthEndNextDayYear = t.Year() + 1
 		monthEndNextDayMonth = 1
 	default:
-		monthEndNextDayYear = t.YearDay()
+		monthEndNextDayYear = t.Year()
 		monthEndNextDayMonth = t.Month() + 1
 	}
 	monthEndNextDay := time.Date(monthEndNextDayYear, monthEndNextDayMonth, 1, 0, 0, 0, 0, t.Location())
