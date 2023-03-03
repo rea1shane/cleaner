@@ -32,7 +32,6 @@ type cleaner struct {
 	Policy struct {
 		Mod1 []string `yaml:"mod-1"`
 		Mod2 []string `yaml:"mod-2"`
-		Mod3 []string `yaml:"mod-3"`
 	} `yaml:"policy"`
 }
 
