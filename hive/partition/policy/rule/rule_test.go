@@ -18,3 +18,7 @@ func TestTimeParse(t *testing.T) {
 	fmt.Println(t2me)
 	fmt.Println(t1me == t2me)
 }
+
+func TestTimeAdd(t *testing.T) {
+	fmt.Println(time.Now().Add(-24 * time.Hour))
+}
