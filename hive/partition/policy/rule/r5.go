@@ -9,7 +9,7 @@ type R5 struct{}
 
 func (r R5) IsMatch(t time.Time, ts []time.Time) bool {
 	for _, t2 := range ts {
-		if t.Sub(t2) > 0 {
+		if t.Sub(t2) < 0 {
 			return false
 		}
 	}
