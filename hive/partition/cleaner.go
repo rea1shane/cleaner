@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/rea1shane/cleaner/hive/partition/policy/mod"
 	"github.com/rea1shane/cleaner/hive/partition/storage"
 	"github.com/xuri/excelize/v2"
@@ -95,6 +96,8 @@ func main() {
 			}
 		}
 	}
+
+	fmt.Println("运行结束")
 }
 
 func groupHivePartitions(m mod.Mod, dbTable string) {

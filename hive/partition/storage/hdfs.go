@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"github.com/colinmarc/hdfs"
 	"github.com/morikuni/failure"
 	"os"
@@ -63,12 +64,14 @@ func (h *Hdfs) BackupPartitions(db, table string, partitions []string) error {
 		if err != nil {
 			return failure.Wrap(err)
 		}
+		fmt.Println("开始移动分区 " + src + " -> " + dst)
 		for _, file := range files {
 			err = h.client.Rename(src+file.Name(), dst+file.Name())
 			if err != nil {
 				return failure.Wrap(err)
 			}
 		}
+		fmt.Println("移动分区成功 " + src + " -> " + dst)
 	}
 	// 删除原始路径
 	return h.DeletePartitions(db, table, partitions)
@@ -77,10 +80,12 @@ func (h *Hdfs) BackupPartitions(db, table string, partitions []string) error {
 func (h *Hdfs) DeletePartitions(db, table string, partitions []string) error {
 	tablePath := h.getTablePath(db, table)
 	for _, partition := range partitions {
+		fmt.Println("开始删除分区 " + tablePath + "/" + partition)
 		err := h.client.Remove(tablePath + "/" + partition)
 		if err != nil {
 			return failure.Wrap(err)
 		}
+		fmt.Println("删除分区成功 " + tablePath + "/" + partition)
 	}
 	return nil
 }
