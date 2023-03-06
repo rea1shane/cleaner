@@ -46,6 +46,8 @@ var (
 )
 
 func main() {
+	fmt.Println("开始运行 " + time.Now().String())
+
 	// 读取配置文件
 	file, err := ioutil.ReadFile("setting.yaml")
 	if err != nil {
@@ -55,6 +57,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println("运行模式：" + c.Action.Type)
 
 	// 初始化存储
 	switch c.Hive.Storage.Type {
@@ -97,7 +101,7 @@ func main() {
 		}
 	}
 
-	fmt.Println("运行结束")
+	fmt.Println("运行结束 " + time.Now().String())
 }
 
 func groupHivePartitions(m mod.Mod, dbTable string) {
@@ -137,6 +141,8 @@ func groupHivePartitions(m mod.Mod, dbTable string) {
 }
 
 func saveToExcel() {
+	fmt.Println("开始生成 Excel")
+
 	f := excelize.NewFile()
 	defer func() {
 		if err := f.Close(); err != nil {
@@ -162,6 +168,8 @@ func saveToExcel() {
 	if err := f.SaveAs("logs/" + time.Now().Format("2006-01-02") + "_" + c.Action.Type + ".xlsx"); err != nil {
 		panic(err)
 	}
+
+	fmt.Println("生成 Excel 成功")
 }
 
 func savePartitionsToSheet(f *excelize.File, sheetName string, m map[string]map[string][]string) {
