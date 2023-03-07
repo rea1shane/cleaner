@@ -16,9 +16,14 @@ var (
 )
 
 func TestLs(t *testing.T) {
-	subDirs, _ := client.ReadDir("/apps/hive/warehouse")
-	for _, dir := range subDirs {
-		fmt.Println(dir.Name())
+	subDirs, err := client.ReadDir("/apps/hive/warehouse")
+	switch err.(type) {
+	case *os.PathError:
+		fmt.Println("BINGO")
+	default:
+		for _, dir := range subDirs {
+			fmt.Println(dir.Name())
+		}
 	}
 }
 
