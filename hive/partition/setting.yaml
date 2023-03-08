@@ -20,6 +20,9 @@ hive:
     # 备份数据的路径，数据将会从 root-path 移动到 backup-path 并且保留相对 root-path 的目录层级
     backup-path: /cleaner/backup
 
+  zookeeper:
+    quorum: host1:port1,host2:port2,host3:port3
+
 policy:
   mod-1:
     - ods/A
