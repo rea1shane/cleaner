@@ -95,5 +95,5 @@ func (h *Hdfs) Close() error {
 }
 
 func (h *Hdfs) getTablePath(db, table string) string {
-	return h.rootPath + "/" + db + "/" + table
+	return h.rootPath + "/" + db + ".db/" + table
 }

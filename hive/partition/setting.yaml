@@ -25,8 +25,8 @@ hive:
 
 policy:
   mod-1:
-    - ods/A
+    - ods.A
 
   mod-2:
-    - dw/B
-    - dw/C
+    - dw.B
+    - dw.C

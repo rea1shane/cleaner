@@ -11,8 +11,8 @@ import (
 // 生成测试数据
 
 var (
-	client, _ = hdfs.New("localhost:9000")
-	tableList = make(map[string][]string)
+	client, _                = hdfs.New("localhost:9000")
+	dbTableWithPartitionsMap = make(map[string][]string)
 )
 
 func TestLs(t *testing.T) {
@@ -20,6 +20,8 @@ func TestLs(t *testing.T) {
 	switch err.(type) {
 	case *os.PathError:
 		fmt.Println("BINGO")
+	case error:
+		fmt.Println("ERROR")
 	default:
 		for _, dir := range subDirs {
 			fmt.Println(dir.Name())
@@ -28,11 +30,11 @@ func TestLs(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
-	for table, partitions := range tableList {
-		ss := strings.Split(table, "/")
+	for dbTable, partitions := range dbTableWithPartitionsMap {
+		dbAndTable := strings.Split(dbTable, ".")
 		for _, partition := range partitions {
-			client.MkdirAll("/apps/hive/warehouse/"+ss[0]+"/"+ss[1]+"/data_date="+partition, os.FileMode(0755))
-			client.CreateEmptyFile("/apps/hive/warehouse/" + ss[0] + "/" + ss[1] + "/data_date=" + partition + "/testFile")
+			client.MkdirAll("/apps/hive/warehouse/"+dbAndTable[0]+".db/"+dbAndTable[1]+"/data_date="+partition, os.FileMode(0755))
+			client.CreateEmptyFile("/apps/hive/warehouse/" + dbAndTable[0] + ".db/" + dbAndTable[1] + "/data_date=" + partition + "/testFile")
 		}
 	}
 }
@@ -207,7 +209,7 @@ func init() {
 			"20230130",
 		}
 	)
-	tableList["ods/A"] = aList
-	tableList["dw/B"] = bList
-	tableList["dw/C"] = cList
+	dbTableWithPartitionsMap["ods.A"] = aList
+	dbTableWithPartitionsMap["dw.B"] = bList
+	dbTableWithPartitionsMap["dw.C"] = cList
 }

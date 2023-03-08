@@ -106,7 +106,7 @@ func main() {
 
 func groupHivePartitions(m mod.Mod, dbTable string) {
 	// 记录不合规范的表名
-	dbAndTable := strings.Split(dbTable, "/")
+	dbAndTable := strings.Split(dbTable, ".")
 	if len(dbAndTable) != 2 {
 		wrongTables = append(wrongTables, dbTable)
 		return
