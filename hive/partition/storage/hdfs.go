@@ -90,6 +90,18 @@ func (h *Hdfs) DeletePartitions(db, table string, partitions []string) error {
 	return nil
 }
 
+func (h *Hdfs) PartitionExist(db, table, partition string) (bool, error) {
+	partitionPath := h.getTablePath(db, table) + "/" + partition
+	_, err := h.client.ReadDir(partitionPath)
+	switch err.(type) {
+	case *os.PathError:
+		return false, nil
+	case error:
+		return false, failure.Wrap(err)
+	}
+	return true, nil
+}
+
 func (h *Hdfs) Close() error {
 	return h.client.Close()
 }

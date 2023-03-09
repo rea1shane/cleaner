@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/beltran/gohive"
+	"github.com/morikuni/failure"
 	"github.com/rea1shane/cleaner/hive/partition/policy/mod"
 	"github.com/rea1shane/cleaner/hive/partition/storage"
 	"github.com/xuri/excelize/v2"
@@ -29,6 +32,9 @@ type cleaner struct {
 			PartitionLayout string `yaml:"partition-layout"`
 			BackupPath      string `yaml:"backup-path"`
 		} `yaml:"storage"`
+		Zookeeper struct {
+			Quorum string `yaml:"quorum"`
+		} `yaml:"zookeeper"`
 	} `yaml:"hive"`
 	Policy struct {
 		Mod1 []string `yaml:"mod-1"`
@@ -39,7 +45,10 @@ type cleaner struct {
 var (
 	c                   *cleaner
 	s                   storage.Storage
+	hiveConnection      *gohive.Connection
+	hiveCursor          *gohive.Cursor
 	wrongTables         []string
+	dbAndTables         = make(map[string]string)
 	savePartitions      = make(map[string]map[string][]string)
 	needCleanPartitions = make(map[string]map[string][]string)
 	wrongPartitions     = make(map[string]map[string][]string)
@@ -48,12 +57,7 @@ var (
 func main() {
 	fmt.Println("开始运行 " + time.Now().String())
 
-	// 读取配置文件
-	file, err := ioutil.ReadFile("setting.yaml")
-	if err != nil {
-		panic(err)
-	}
-	err = yaml.Unmarshal(file, &c)
+	err := loadConfig()
 	if err != nil {
 		panic(err)
 	}
@@ -86,6 +90,7 @@ func main() {
 
 	saveToExcel()
 
+	// 处理需要清理的分区
 	for db, m := range needCleanPartitions {
 		for table, partitions := range m {
 			var err error
@@ -101,9 +106,37 @@ func main() {
 		}
 	}
 
+	// 处理不存在数据的 hive 分区
+	err = initHive()
+	if err != nil {
+		panic(err)
+	}
+	defer closeHive()
+	for db, table := range dbAndTables {
+		sql, err := getDropEmptyPartitionSql(db, table)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(sql)
+		if c.Action.Type != "test" {
+			// 执行清理 sql
+			hiveCursor.Exec(context.Background(), sql)
+		}
+	}
+
 	fmt.Println("运行结束 " + time.Now().String())
 }
 
+// loadConfig 加载配置
+func loadConfig() error {
+	file, err := ioutil.ReadFile("setting.yaml")
+	if err != nil {
+		return failure.Wrap(err)
+	}
+	return failure.Wrap(yaml.Unmarshal(file, &c))
+}
+
+// groupHivePartitions 分类指定表的分区
 func groupHivePartitions(m mod.Mod, dbTable string) {
 	// 记录不合规范的表名
 	dbAndTable := strings.Split(dbTable, ".")
@@ -111,6 +144,9 @@ func groupHivePartitions(m mod.Mod, dbTable string) {
 		wrongTables = append(wrongTables, dbTable)
 		return
 	}
+
+	// 记录合规的库名与表名
+	dbAndTables[dbAndTable[0]] = dbAndTable[1]
 
 	// 获取分区列表
 	partitions, err := s.ListPartitions(dbAndTable[0], dbAndTable[1])
@@ -140,6 +176,7 @@ func groupHivePartitions(m mod.Mod, dbTable string) {
 	}
 }
 
+// saveToExcel 将分类结果保存到 Excel
 func saveToExcel() {
 	fmt.Println("开始生成 Excel")
 
@@ -169,7 +206,7 @@ func saveToExcel() {
 		panic(err)
 	}
 
-	fmt.Println("生成 Excel 成功")
+	fmt.Println("保存 Excel 成功")
 }
 
 func savePartitionsToSheet(f *excelize.File, sheetName string, m map[string]map[string][]string) {
@@ -226,4 +263,61 @@ func parseTimes(layout string, values []string) (ts []time.Time) {
 func parseTime(layout, value string) time.Time {
 	t, _ := time.ParseInLocation(layout, value, time.Now().Location())
 	return t
+}
+
+// initHive 初始化 hive
+func initHive() (err error) {
+	hiveConnection, err = gohive.ConnectZookeeper(c.Hive.Zookeeper.Quorum, "NONE", gohive.NewConnectConfiguration())
+	if err != nil {
+		return failure.Wrap(err)
+	}
+	hiveCursor = hiveConnection.Cursor()
+	return
+}
+
+// closeHive 关闭 hive
+func closeHive() {
+	hiveCursor.Close()
+	hiveConnection.Close()
+}
+
+// getDropEmptyPartitionSql 获取删除指定表空分区的 sql
+func getDropEmptyPartitionSql(db, table string) (string, error) {
+	// 获取所有分区
+	hiveCursor.Exec(context.Background(), fmt.Sprintf("SHOW PARTITIONS %s.%s", db, table))
+	if hiveCursor.Err != nil {
+		err := failure.Wrap(hiveCursor.Err)
+		return "", err
+	}
+
+	// 检测分区是否在 HDFS 中存在，如果不存在则加入 sql
+	var (
+		sql       = fmt.Sprintf("ALTER TABLE %s.%s DROP IF EXISTS ", db, table)
+		partition string
+		flag      = false
+	)
+	for hiveCursor.HasMore(context.Background()) {
+		hiveCursor.FetchOne(context.Background(), &partition)
+		if hiveCursor.Err != nil {
+			err := failure.Wrap(hiveCursor.Err)
+			return "", err
+		}
+		exist, err := s.PartitionExist(db, table, partition)
+		if err != nil {
+			return "", err
+		}
+		if !exist {
+			if flag {
+				sql += ", "
+			}
+			sql += "PARTITION (" + partition + ")"
+			flag = true
+		}
+	}
+
+	if !flag {
+		sql = ""
+	}
+
+	return sql, nil
 }
