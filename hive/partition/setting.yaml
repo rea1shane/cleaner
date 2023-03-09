@@ -1,7 +1,7 @@
 action:
-  # backup：备份并且删除需要清理的数据，并且输出 Excel
-  # delete：删除需要清理的数据，并且输出 Excel
-  # test：仅输出 Excel
+  # backup：备份并且删除需要清理的数据，删除 hive 没有数据的分区，并且输出 Excel 和 sql
+  # delete：删除需要清理的数据，删除 hive 没有数据的分区，并且输出 Excel 和 sql
+  # test：仅输出 Excel 和 sql
   type: test
 
 hive:
@@ -10,7 +10,7 @@ hive:
     hdfs:
       # 如果已经存在 HADOOP_CONF_DIR 或 HADOOP_HOME 环境变量，则将此值置空即可
       config-path: /etc/hadoop/conf/
-      # 进行操作的用户名称
+      # 进行操作的 hdfs 用户名称
       username: username
 
     # hive 存在 hdfs 的根路径
@@ -20,8 +20,11 @@ hive:
     # 备份数据的路径，数据将会从 root-path 移动到 backup-path 并且保留相对 root-path 的目录层级
     backup-path: /cleaner/backup
 
+  # hive zookeeper 连接
   zookeeper:
     quorum: host1:port1,host2:port2,host3:port3
+  # 进行操作的 hive 用户名称
+  username: username
 
 policy:
   mod-1:

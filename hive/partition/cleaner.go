@@ -35,6 +35,7 @@ type cleaner struct {
 		Zookeeper struct {
 			Quorum string `yaml:"quorum"`
 		} `yaml:"zookeeper"`
+		Username string `yaml:"username"`
 	} `yaml:"hive"`
 	Policy struct {
 		Mod1 []string `yaml:"mod-1"`
@@ -267,7 +268,13 @@ func parseTime(layout, value string) time.Time {
 
 // initHive 初始化 hive
 func initHive() (err error) {
-	hiveConnection, err = gohive.ConnectZookeeper(c.Hive.Zookeeper.Quorum, "NONE", gohive.NewConnectConfiguration())
+	hiveConnection, err = gohive.ConnectZookeeper(
+		c.Hive.Zookeeper.Quorum,
+		"NONE",
+		&gohive.ConnectConfiguration{
+			Username: c.Hive.Username,
+		},
+	)
 	if err != nil {
 		return failure.Wrap(err)
 	}
