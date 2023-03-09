@@ -50,7 +50,7 @@ var (
 	hiveConnection      *gohive.Connection
 	hiveCursor          *gohive.Cursor
 	wrongTables         []string
-	dbAndTables         = make(map[string]string)
+	dbAndTables         = make(map[string][]string)
 	savePartitions      = make(map[string]map[string][]string)
 	needCleanPartitions = make(map[string]map[string][]string)
 	wrongPartitions     = make(map[string]map[string][]string)
@@ -114,15 +114,17 @@ func main() {
 		panic(err)
 	}
 	defer closeHive()
-	for db, table := range dbAndTables {
-		sql, err := getDropEmptyPartitionSql(db, table)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(sql)
-		if c.Action.Type != "test" {
-			// 执行清理 sql
-			hiveCursor.Exec(context.Background(), sql)
+	for db, tables := range dbAndTables {
+		for _, table := range tables {
+			sql, err := getDropEmptyPartitionSql(db, table)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println(sql)
+			if c.Action.Type != "test" {
+				// 执行清理 sql
+				hiveCursor.Exec(context.Background(), sql)
+			}
 		}
 	}
 
@@ -148,7 +150,7 @@ func groupHivePartitions(m mod.Mod, dbTable string) {
 	}
 
 	// 记录合规的库名与表名
-	dbAndTables[dbAndTable[0]] = dbAndTable[1]
+	dbAndTables[dbAndTable[0]] = append(dbAndTables[dbAndTable[0]], dbAndTable[1])
 
 	// 获取分区列表
 	partitions, err := s.ListPartitions(dbAndTable[0], dbAndTable[1])
