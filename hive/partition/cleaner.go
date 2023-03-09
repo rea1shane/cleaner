@@ -54,6 +54,7 @@ var (
 	savePartitions      = make(map[string]map[string][]string)
 	needCleanPartitions = make(map[string]map[string][]string)
 	wrongPartitions     = make(map[string]map[string][]string)
+	sqls                []string
 )
 
 func main() {
@@ -116,15 +117,15 @@ func main() {
 	defer closeHive()
 	for db, tables := range dbAndTables {
 		for _, table := range tables {
-			sql, err := getDropEmptyPartitionSql(db, table)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println(sql)
-			if c.Action.Type != "test" {
-				// 执行清理 sql
-				hiveCursor.Exec(context.Background(), sql)
-			}
+			generateDropEmptyPartitionSql(db, table)
+		}
+	}
+	// 生成 .sql 文件
+	saveSqls()
+	// 执行清理 sql
+	if c.Action.Type == "backup" || c.Action.Type == "delete" {
+		for _, sql := range sqls {
+			hiveCursor.Exec(context.Background(), sql)
 		}
 	}
 
@@ -288,13 +289,12 @@ func closeHive() {
 	hiveConnection.Close()
 }
 
-// getDropEmptyPartitionSql 获取删除指定表空分区的 sql
-func getDropEmptyPartitionSql(db, table string) (string, error) {
+// generateDropEmptyPartitionSql 生成删除指定表空分区的 sql
+func generateDropEmptyPartitionSql(db, table string) {
 	// 获取所有分区
 	hiveCursor.Exec(context.Background(), fmt.Sprintf("SHOW PARTITIONS %s.%s", db, table))
 	if hiveCursor.Err != nil {
-		err := failure.Wrap(hiveCursor.Err)
-		return "", err
+		panic(failure.Wrap(hiveCursor.Err))
 	}
 
 	// 检测分区是否在 HDFS 中存在，如果不存在则加入 sql
@@ -306,12 +306,11 @@ func getDropEmptyPartitionSql(db, table string) (string, error) {
 	for hiveCursor.HasMore(context.Background()) {
 		hiveCursor.FetchOne(context.Background(), &partition)
 		if hiveCursor.Err != nil {
-			err := failure.Wrap(hiveCursor.Err)
-			return "", err
+			panic(failure.Wrap(hiveCursor.Err))
 		}
 		exist, err := s.PartitionExist(db, table, partition)
 		if err != nil {
-			return "", err
+			panic(err)
 		}
 		if !exist {
 			if flag {
@@ -321,10 +320,24 @@ func getDropEmptyPartitionSql(db, table string) (string, error) {
 			flag = true
 		}
 	}
-
-	if !flag {
-		sql = ""
+	if flag {
+		sqls = append(sqls, sql)
 	}
+}
 
-	return sql, nil
+// saveSqls 创建 .sql 文件
+func saveSqls() {
+	fmt.Println("开始保存删除分区 sql")
+	file, err := os.Create("logs/" + time.Now().Format("2006-01-02") + "_" + c.Action.Type + ".sql")
+	if err != nil {
+		panic(failure.Wrap(err))
+	}
+	defer file.Close()
+	for _, sql := range sqls {
+		_, err := file.Write([]byte(sql + ";\n"))
+		if err != nil {
+			panic(failure.Wrap(err))
+		}
+	}
+	fmt.Println("保存删除分区 sql 成功")
 }
