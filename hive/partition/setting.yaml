@@ -5,6 +5,14 @@ action:
   type: test
 
 hive:
+  # hive zookeeper 连接
+  zookeeper:
+    quorum: host1:port1,host2:port2,host3:port3
+
+  # 进行操作的 hive 用户
+  username: username
+  password: password
+
   storage:
     type: hdfs
     hdfs:
@@ -19,12 +27,6 @@ hive:
     partition-layout: data_date=20060102
     # 备份数据的路径，数据将会从 root-path 移动到 backup-path 并且保留相对 root-path 的目录层级
     backup-path: /cleaner/backup
-
-  # hive zookeeper 连接
-  zookeeper:
-    quorum: host1:port1,host2:port2,host3:port3
-  # 进行操作的 hive 用户名称
-  username: username
 
 policy:
   mod-1:
