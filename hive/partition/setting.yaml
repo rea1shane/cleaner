@@ -35,3 +35,7 @@ policy:
   mod-2:
     - dw.B
     - dw.C
+
+  mod-3:
+    - app.E
+    - app.F

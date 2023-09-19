@@ -19,6 +19,10 @@ var (
 		rule.R4{},
 		rule.R5{},
 	}}
+	M3 = Mod{[]rule.Rule{
+		rule.R3{},
+		rule.R6{},
+	}}
 )
 
 type Mod struct {
