@@ -3,6 +3,7 @@ package mod
 import (
 	"github.com/morikuni/failure"
 	"github.com/rea1shane/cleaner/hive/partition/policy/rule"
+	"sort"
 	"time"
 )
 
@@ -23,6 +24,13 @@ var (
 		rule.R3{},
 		rule.R6{},
 	}}
+	M4 = Mod{[]rule.Rule{
+		rule.R7{},
+	}}
+	M5 = Mod{[]rule.Rule{
+		rule.R7{},
+		rule.R8{},
+	}}
 )
 
 type Mod struct {
@@ -42,6 +50,11 @@ func (m Mod) Group(layout string, partitions []string) (matched, unmatched, erro
 	for _, t := range tm {
 		ts = append(ts, t)
 	}
+
+	// 从旧到新排序时间数组
+	sort.Slice(ts, func(i, j int) bool {
+		return ts[i].Before(ts[j])
+	})
 
 	// 判断是否符合规则
 	for s, t := range tm {

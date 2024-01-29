@@ -39,3 +39,9 @@ policy:
   mod-3:
     - app.E
     - app.F
+
+  mod-4:
+    - app.G
+
+  mod-5:
+    - app.H

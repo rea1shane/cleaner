@@ -41,6 +41,9 @@ type cleaner struct {
 	Policy struct {
 		Mod1 []string `yaml:"mod-1"`
 		Mod2 []string `yaml:"mod-2"`
+		Mod3 []string `yaml:"mod-3"`
+		Mod4 []string `yaml:"mod-4"`
+		Mod5 []string `yaml:"mod-5"`
 	} `yaml:"policy"`
 }
 
@@ -89,6 +92,15 @@ func main() {
 	}
 	for _, dbTable := range c.Policy.Mod2 {
 		groupHivePartitions(mod.M2, dbTable)
+	}
+	for _, dbTable := range c.Policy.Mod3 {
+		groupHivePartitions(mod.M3, dbTable)
+	}
+	for _, dbTable := range c.Policy.Mod4 {
+		groupHivePartitions(mod.M4, dbTable)
+	}
+	for _, dbTable := range c.Policy.Mod5 {
+		groupHivePartitions(mod.M5, dbTable)
 	}
 
 	saveToExcel()
