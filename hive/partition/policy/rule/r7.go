@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// R7 分区为所属月最后一个分区
+// R7 分区为所属月最后一个分区。
 type R7 struct{}
 
 func (r R7) IsMatch(t time.Time, ts []time.Time) bool {
